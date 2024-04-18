@@ -47,7 +47,7 @@ jobs:
       - name: Setup Terragrunt
         uses: autero1/action-terragrunt@v3
         with:
-          terragrunt_version: 0.55.2
+          terragrunt-version: 0.55.2
 
       - name: Setup Infracost
         if: github.event_name == 'pull_request'
