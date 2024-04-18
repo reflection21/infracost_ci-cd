@@ -98,32 +98,41 @@ jobs:
 
       - uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terragrunt Format and Style 🖌 \`${{ steps.fmt.outcome }}\`
-            #### Terragrunt Initialization ⚙️ \`${{ steps.init.outcome }}\`
-            #### Terragrunt Validation 🤖 \`${{ steps.validate.outcome }}\`
-            #### Terragrunt Plan 📖 \`${{ steps.plan.outcome }}\`
-
-            <details><summary>Show Plan</summary>
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            <details><summary>Validation Output</summary>
 
             \`\`\`\n
-            ${{ env.PLAN_OUTPUT }}
+            ${{ steps.validate.outputs.stdout }}
             \`\`\`
 
             </details>
 
-            Results for commit: ${{ github.event.pull_request.head.sha }}
-            
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.WORKING_DIRECTORY }}\`, Workflow: \`${{ github.workflow }}\`*`;
-              
-            github.issues.createComment({
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.working-directory }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: output
             })
+      
 
       - name: Terragrunt Plan Status
         if: steps.plan.outcome == 'failure'
